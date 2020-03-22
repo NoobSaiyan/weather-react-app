@@ -14,7 +14,7 @@ export const DetailedInfoCardContainer = styled.div`
 
 export const DetailedInfoCardTitle = styled.div`
   margin: auto;
-  font-size: 22px;
+  font-size: 21px;
 `
 
 export const DetailedInfoCardSubTitle = styled.div`
