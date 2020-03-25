@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { useTheme } from 'styled-components'
 
 import {
   CustomSlider,
@@ -13,12 +12,12 @@ import DetailedInfo from '../../components/detailed-info/detailed-info.component
 
 const DetailsSlider = () => {
   const [activeIndex, setActiveIndex] = useState(1)
-  const theme = useTheme()
 
   let staticActiveIndex = 1
 
   const handleNext = () => {
     setActiveIndex(staticActiveIndex > 2 ? 0 : staticActiveIndex + 1)
+    console.log(staticActiveIndex)
   }
 
   return (
@@ -33,7 +32,7 @@ const DetailsSlider = () => {
         <DetailedInfo />
       </CustomSlider>
 
-      <SliderOverlay theme={theme} onClick={handleNext} />
+      <SliderOverlay onClick={handleNext} />
     </SliderContainer>
   )
 }

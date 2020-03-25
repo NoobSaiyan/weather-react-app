@@ -1,5 +1,4 @@
 import React from 'react'
-import { useTheme } from 'styled-components'
 
 import Header from '../../components/header/header.component'
 import ArcRangeSlider from '../../components/arc-range-slider/arc-range-slider.component'
@@ -15,10 +14,8 @@ import {
 } from './weather.styles'
 
 const WeatherPage = () => {
-  const theme = useTheme()
-
   return (
-    <WeatherPageContainer theme={theme}>
+    <WeatherPageContainer>
       <TopContainer>
         <Header />
       </TopContainer>

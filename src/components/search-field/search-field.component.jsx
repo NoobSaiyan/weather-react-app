@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { createStructuredSelector } from 'reselect'
-import { useTheme } from 'styled-components'
 
 import { SearchFieldForm, SearchInput } from './search-field.styles'
 
@@ -10,7 +9,6 @@ import { selectPlaceName } from '../../redux/weather/weather.selectors'
 
 const SearchField = ({ searchValue = '', getWeatherStart, placeName }) => {
   const [query, setQuery] = useState(searchValue)
-  const theme = useTheme()
 
   useEffect(() => {
     if (placeName) setQuery(placeName.split(',')[0])
@@ -34,7 +32,6 @@ const SearchField = ({ searchValue = '', getWeatherStart, placeName }) => {
         spellCheck="false"
         value={query}
         onChange={handleChange}
-        theme={theme}
       />
     </SearchFieldForm>
   )

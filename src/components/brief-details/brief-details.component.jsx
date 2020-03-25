@@ -1,15 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { createStructuredSelector } from 'reselect'
-import { format, fromUnixTime, addHours } from 'date-fns'
-import { utcToZonedTime } from 'date-fns-tz'
 import { useTheme } from 'styled-components'
+import { formatTime, roundAndFix } from '../../redux/utils'
 
 import {
   selectCurrentWeather,
   selectDailyWeather,
-  selectTimezone,
-  selectHourlyWeather
+  selectTimezone
 } from '../../redux/weather/weather.selectors'
 
 import {
@@ -45,29 +43,15 @@ const UpSVG = ({ theme }) => {
   )
 }
 
-const BriefDetails = ({
-  dailyWeather,
-  currentWeather,
-  hourlyWeather,
-  timezone
-}) => {
+const BriefDetails = ({ dailyWeather, currentWeather, timezone }) => {
   const theme = useTheme()
 
-  const roundAndFix = (n, d) => {
-    const m = Math.pow(10, d)
-    return Math.round(n * m) / m
-  }
-
-  const formatTime = (time, hours = 0) =>
-    format(
-      utcToZonedTime(addHours(fromUnixTime(time), hours), timezone),
-      'E eo'
-    ).toUpperCase()
-
   return dailyWeather ? (
-    <BriefDetailsContainer theme={theme}>
+    <BriefDetailsContainer>
       <MinTempContainer>
-        <span>{formatTime(dailyWeather[0].time)}</span>
+        <span>
+          {formatTime(dailyWeather[0].time, { timezone, formatString: 'E eo' })}
+        </span>
         <DownSVG theme={theme} />
         <p>{roundAndFix(dailyWeather[0].temperatureMin, 1)}º</p>
       </MinTempContainer>
@@ -77,7 +61,9 @@ const BriefDetails = ({
       <MaxTempContainer>
         <UpSVG theme={theme} />
         <p>{roundAndFix(dailyWeather[0].temperatureMax, 1)}º</p>
-        <span>{formatTime(dailyWeather[2].time)}</span>
+        <span>
+          {formatTime(dailyWeather[2].time, { timezone, formatString: 'E eo' })}
+        </span>
       </MaxTempContainer>
     </BriefDetailsContainer>
   ) : (
@@ -88,7 +74,6 @@ const BriefDetails = ({
 const mapStateToProps = createStructuredSelector({
   dailyWeather: selectDailyWeather,
   currentWeather: selectCurrentWeather,
-  hourlyWeather: selectHourlyWeather,
   timezone: selectTimezone
 })
 

@@ -8,29 +8,32 @@ import { gsap, TweenMax, TimelineMax, Linear } from 'gsap'
 
 import { ArcRangeSliderContainer } from './arc-range-slider.styles'
 import WeatherIcon from '../weather-icon/weather-icon.component'
+import ArcBackground from './arc-background.component'
 
 import {
-  selectCurrentWeather,
-  selectDailyWeather
+  selectTimezone,
+  selectLowerBoundForSlider
 } from '../../redux/weather/weather.selectors'
+
 import { updateWeatherRangeProgress } from '../../redux/weather/weather.actions'
 
 class ArcRange extends React.Component {
+  state = {
+    progress: 0
+  }
+
   windowScrollListener = null
   windowResizeListener = null
 
-  initRange = () => {
-    const { currentWeather, dailyWeather } = this.props
+  timeline = null
+  draggable = null
 
-    const newLowerBound =
-      (currentWeather.time - dailyWeather[0].time) /
-      (dailyWeather[2].time - dailyWeather[0].time)
+  initRange = lowerBound => {
+    const newLowerBound = lowerBound || 0
 
     const { updateWeatherRangeProgress } = this.props
     const bounds = { minX: 41.55 + newLowerBound * 331.5, maxX: 373.45 }
     const seekTo = bounds.minX / 415.5
-
-    console.log('RENDER')
 
     const weatherIcon = document.getElementById('range-weather-icon')
     weatherIcon.style.position = 'fixed'
@@ -56,7 +59,8 @@ class ArcRange extends React.Component {
         0
       )
       .seek(seekTo)
-    Draggable.create('#range-knob', {
+
+    var draggable = Draggable.create('#range-knob', {
       trigger: '#range-knob',
       type: 'x',
       throwProps: true,
@@ -73,8 +77,7 @@ class ArcRange extends React.Component {
       const scale = 415.5 - bounds.minX - (415.5 - bounds.maxX)
 
       updateWeatherRangeProgress(
-        Math.round(((this.x - bounds.minX) / scale + Number.EPSILON) * 100) /
-          100
+        Math.round(((this.x - this.minX) / scale + Number.EPSILON) * 100) / 100
       )
     }
 
@@ -83,10 +86,15 @@ class ArcRange extends React.Component {
       weatherIcon.style.left = `${knob.x}px`
       weatherIcon.style.top = `${knob.y}px`
     }
+
+    return { tl, draggable }
   }
 
   componentDidMount() {
-    this.initRange()
+    const { lowerBound } = this.props
+    const { tl, draggable } = this.initRange(lowerBound)
+    this.timeline = tl
+    this.draggable = draggable
 
     this.windowResizeListener = window.addEventListener(
       'resize',
@@ -101,7 +109,11 @@ class ArcRange extends React.Component {
   }
 
   componentDidUpdate() {
-    this.initRange()
+    const { lowerBound } = this.props
+    const minX = 41.55 + lowerBound * 331.5
+    const seekTo = minX / 415.5
+    this.draggable[0].applyBounds({ minX, maxX: 373.45 })
+    if (this.timeline) this.timeline.seek(seekTo)
     this.updateWeatherIconPosition()
   }
 
@@ -118,7 +130,7 @@ class ArcRange extends React.Component {
     weatherIcon.style.height = `${knob.height}px`
   }
 
-  updateWeatherIconPosition = () => {
+  updateWeatherIconPosition = progress => {
     const knob = document.getElementById('range-knob').getBoundingClientRect()
     const weatherIcon = document.getElementById('range-weather-icon')
     weatherIcon.style.left = `${knob.x}px`
@@ -126,8 +138,6 @@ class ArcRange extends React.Component {
   }
 
   render() {
-    const { currentWeather } = this.props
-
     return (
       <>
         <svg
@@ -142,10 +152,7 @@ class ArcRange extends React.Component {
           <circle id="range-knob" r="25" fill="transparent" />
         </svg>
 
-        <WeatherIcon
-          iconName={currentWeather ? currentWeather.icon : 'clear-day'}
-          id="range-weather-icon"
-        />
+        <WeatherIcon id="range-weather-icon" showCurrentSliderTime />
       </>
     )
   }
@@ -163,28 +170,19 @@ const ArcSVG = () => {
   )
 }
 
-const ArcRangeSlider = ({
-  currentWeather,
-  dailyWeather,
-  updateWeatherRangeProgress,
-  ...otherProps
-}) => {
+const ArcRangeSlider = () => {
   return (
     <ArcRangeSliderContainer>
-      <ArcSVG />
-      <ArcRange
-        {...otherProps}
-        dailyWeather={dailyWeather}
-        currentWeather={currentWeather}
-        updateWeatherRangeProgress={updateWeatherRangeProgress}
-      />
+      {/* <ArcSVG /> */}
+      <ArcBackground />
+      <ConnectedArcRange />
     </ArcRangeSliderContainer>
   )
 }
 
 const mapStateToProps = createStructuredSelector({
-  currentWeather: selectCurrentWeather,
-  dailyWeather: selectDailyWeather
+  timezone: selectTimezone,
+  lowerBound: selectLowerBoundForSlider
 })
 
 const mapDispatchToProps = dispatch => ({
@@ -192,4 +190,6 @@ const mapDispatchToProps = dispatch => ({
     dispatch(updateWeatherRangeProgress(progress))
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(ArcRangeSlider)
+const ConnectedArcRange = connect(mapStateToProps, mapDispatchToProps)(ArcRange)
+
+export default ArcRangeSlider

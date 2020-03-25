@@ -51,3 +51,27 @@ export const selectTimezone = createSelector(
   [selectWeather],
   weather => weather.timezone
 )
+
+export const selectCurrentSliderTime = createSelector(
+  [selectWeather],
+  weather => weather.currentSliderTime
+)
+
+export const selectLowerBoundForSlider = createSelector(
+  [selectCurrentWeather, selectDailyWeather],
+  (currentWeather, dailyWeather) =>
+    currentWeather
+      ? (currentWeather.time - dailyWeather[0].time) /
+        (dailyWeather[2].time - dailyWeather[0].time)
+      : 0
+)
+
+export const selectCurrentWeatherIcon = createSelector(
+  [selectCurrentWeather],
+  currentWeather => (currentWeather ? currentWeather.icon : 'clear-day')
+)
+
+export const selectCurrentWeatherBak = createSelector(
+  [selectWeather],
+  weather => weather.currentlyBak
+)
